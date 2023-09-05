@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import io from "socket.io-client";
+import { Chat } from "./components/Chat";
+
+const socket = io.connect("http://localhost:3001");
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [roomId, setRoomId] = useState("");
+  const [username, setUsername] = useState("");
+  const [showChat, setShowChat] = useState(false);
+
+  const joinRoom = () => {
+    if (username !== "" && roomId !== "") {
+      socket.emit("join room", roomId);
+    }
+    setShowChat(true);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      {showChat ? (
+        <Chat
+          socket={socket}
+          username={username}
+          roomId={roomId}
+          setShowChat={setShowChat}
+        />
+      ) : (
+        <div className="join-form">
+          <h1>Join a chat</h1>
+          <input
+            type="text"
+            placeholder="Enter room id"
+            onChange={(e) => setRoomId(e.target.value)}
+            value={roomId}
+          />
+          <input
+            type="text"
+            placeholder="Enter username"
+            onChange={(e) => setUsername(e.target.value)}
+            value={username}
+          />
+          <button className="join-button" onClick={joinRoom}>
+            Join room
+          </button>
+        </div>
+      )}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
